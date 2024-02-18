@@ -13,7 +13,7 @@ exports.getTasks = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: 'Internal Server Error' });
+    return res.status(500).json({ message: 'Internal Server Error', error });
   }
 };
 
@@ -33,7 +33,7 @@ exports.getTaskById = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: 'Internal Server Error' });
+    return res.status(500).json({ message: 'Internal Server Error', error });
   }
 };
 
@@ -53,7 +53,7 @@ exports.createTask = async (req, res) => {
     res.status(201).json(newTask);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ message: 'Internal Server Error', error });
   }
 };
 
@@ -69,6 +69,8 @@ exports.editTask = async (req, res) => {
       { returning: true, where: { id: taskId } }
     );
 
+    console.log(updatedRows, updatedRowsCount);
+
     if (updatedRowsCount === 0) {
       return res.status(404).json({ error: 'Task not found' });
     }
@@ -79,7 +81,7 @@ exports.editTask = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: 'Internal Server Error' });
+    return res.status(500).json({ message: 'Internal Server Error', error });
   }
 };
 
@@ -97,6 +99,6 @@ exports.deleteTask = async (req, res) => {
     return res.status(200).json({ message: 'Task deleted successfully' });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: 'Internal Server Error' });
+    return res.status(500).json({ message: 'Internal Server Error', error });
   }
 };
