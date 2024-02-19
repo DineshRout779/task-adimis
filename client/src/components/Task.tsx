@@ -1,9 +1,9 @@
-import { TaskType } from '@/data';
+import { Task } from '@/features/tasks/taskSlice';
 import { Draggable } from '@hello-pangea/dnd';
 
-const Task = ({ task, index }: { task: TaskType; index: number }) => {
+const Task = ({ task, index }: { task: Task; index: number }) => {
   return (
-    <Draggable draggableId={task.id} index={index}>
+    <Draggable draggableId={task.id.toString()} key={index} index={index}>
       {(provided) => (
         <li
           {...provided.draggableProps}
@@ -12,7 +12,8 @@ const Task = ({ task, index }: { task: TaskType; index: number }) => {
           className='p-4 rounded-md shadow-sm bg-white my-2'
           key={task.id}
         >
-          {task.content}
+          <p> {task.title}</p>
+          <small>{task.description}</small>
         </li>
       )}
     </Draggable>

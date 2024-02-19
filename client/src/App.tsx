@@ -1,13 +1,16 @@
 import { useEffect, useState } from 'react';
-import data from './data';
-import Column from './components/Column';
 import { DragDropContext } from '@hello-pangea/dnd';
 import { getAllTasks } from './services/taskservices';
+import Column from './components/Column';
+import { useGetTasksQuery } from './services/task';
 
 function App() {
-  const [allTasks, setAllTasks] = useState(data.tasks);
-  const [allColumns, setAllColumns] = useState(data.columns);
-  const [order, setOrder] = useState(data.columnOrder);
+  const { data, isLoading, error } = useGetTasksQuery();
+  console.log('taskz: ', data, isLoading, error);
+
+  const [allTasks, setAllTasks] = useState(null);
+  const [allColumns, setAllColumns] = useState(null);
+  // const [order, setOrder] = useState(data.columnOrder);
 
   const handleDragStart = (result: unknown) => {
     console.log('start: ', result);
@@ -27,12 +30,33 @@ function App() {
 
         console.log(res);
 
-        // setAllTasks(res.data.data);
+        setAllTasks(res.data.data);
+
+        const groupedTasks = res.data.data.reduce((acc, task) => {
+          const { status } = task;
+          if (!acc[status]) {
+            acc[status] = {
+              id: status,
+              title: status.charAt(0).toUpperCase() + status.slice(1), // Capitalize the first letter
+              tasks: [],
+            };
+          }
+          acc[status].tasks.push(task);
+          return acc;
+        }, {});
+
+        console.log('columns: ', groupedTasks);
+
+        setAllColumns(groupedTasks);
       } catch (err) {
         console.log(err);
       }
     })();
   }, []);
+
+  if (allTasks === null || allColumns === null) {
+    return <p>Loading...</p>;
+  }
 
   return (
     <div className='container max-w-[1200px] mx-auto w-[90%]'>
@@ -43,12 +67,13 @@ function App() {
         onDragEnd={handleDragEnd}
       >
         <div className='grid grid-cols-2 gap-4 my-4'>
-          {order.map((columnId: string) => {
-            const column = allColumns[columnId];
-            const tasks = column.taskIds.map((taskId) => allTasks[taskId]);
-
-            return <Column key={column.id} column={column} tasks={tasks} />;
-          })}
+          {Object.keys(allColumns).map((columnId) => (
+            <Column
+              tasks={allColumns[columnId].tasks}
+              column={allColumns[columnId]}
+              key={columnId}
+            />
+          ))}
         </div>
       </DragDropContext>
     </div>
