@@ -7,7 +7,7 @@ export const tasksApi = createApi({
     baseUrl: import.meta.env.VITE_API_URL,
   }),
   endpoints: (builder) => ({
-    getTasks: builder.query({
+    getTasks: builder.query<unknown, void>({
       query: () => '/tasks',
     }),
   }),
