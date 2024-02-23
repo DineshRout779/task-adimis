@@ -1,83 +1,100 @@
+import { useSelector } from 'react-redux';
+import { useGetTasksQuery } from './services/task';
+import {
+  Column as ColumnType,
+  Task,
+  selectColumns,
+  selectTasks,
+  setColumns,
+  setTasks,
+  updateTask,
+} from './features/tasks/taskSlice';
+import { useDispatch } from 'react-redux';
 import { useEffect, useState } from 'react';
 import { DragDropContext } from '@hello-pangea/dnd';
-import { getAllTasks } from './services/taskservices';
 import Column from './components/Column';
-import { useGetTasksQuery } from './services/task';
 
-function App() {
-  const { data, isLoading, error } = useGetTasksQuery();
-  console.log('taskz: ', data, isLoading, error);
-
-  const [allTasks, setAllTasks] = useState(null);
-  const [allColumns, setAllColumns] = useState(null);
-  // const [order, setOrder] = useState(data.columnOrder);
-
-  const handleDragStart = (result: unknown) => {
-    console.log('start: ', result);
-  };
-
-  const handleDragUpdate = (result: unknown) => {
-    console.log('update: ', result);
-  };
-  const handleDragEnd = (result: unknown) => {
-    console.log('end: ', result);
-  };
+const App = () => {
+  const { data, isLoading, error, isSuccess } = useGetTasksQuery();
+  const tasks = useSelector(selectTasks);
+  const columns = useSelector(selectColumns);
+  const dispatch = useDispatch();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    (async () => {
-      try {
-        const res = await getAllTasks();
+    if (isSuccess) {
+      dispatch(setTasks(data));
 
-        console.log(res);
+      const columns = data.tasks.reduce((acc: ColumnType[], task: Task) => {
+        const { status } = task;
 
-        setAllTasks(res.data.data);
+        const column = acc.find((c: ColumnType) => c.title === status);
 
-        const groupedTasks = res.data.data.reduce((acc, task) => {
-          const { status } = task;
-          if (!acc[status]) {
-            acc[status] = {
-              id: status,
-              title: status.charAt(0).toUpperCase() + status.slice(1), // Capitalize the first letter
-              tasks: [],
-            };
-          }
-          acc[status].tasks.push(task);
-          return acc;
-        }, {});
+        if (!column) {
+          acc.push({
+            id: `column-${acc.length}`,
+            title: status,
+            tasks: [task],
+          });
+        }
 
-        console.log('columns: ', groupedTasks);
+        column?.tasks.push(task);
+        return acc;
+      }, []);
 
-        setAllColumns(groupedTasks);
-      } catch (err) {
-        console.log(err);
-      }
-    })();
-  }, []);
+      console.log('cols: ', columns);
+      dispatch(setColumns(columns));
+      setLoading(false);
+    }
+  }, [data, dispatch, isSuccess]);
 
-  if (allTasks === null || allColumns === null) {
-    return <p>Loading...</p>;
-  }
+  const handleDragEnd = (result) => {
+    const { source, destination, draggableId } = result;
+
+    console.log(result);
+
+    if (!destination) {
+      return;
+    }
+
+    // Check if the task is dropped within the same column
+    if (
+      source.droppableId === destination.droppableId &&
+      destination.index === source.index
+    ) {
+      return;
+    }
+
+    // Update task data (e.g., using Redux actions)
+    dispatch(
+      updateTask({
+        id: draggableId,
+        status: destination.droppableId,
+        index: destination.index,
+      })
+    );
+  };
+
+  if (isLoading || loading) return <p>Loading...</p>;
+
+  if (error) return <p>Error</p>;
 
   return (
     <div className='container max-w-[1200px] mx-auto w-[90%]'>
       <h1 className='text-2xl my-4 font-semibold'>Taskify 🚀</h1>
-      <DragDropContext
-        onDragStart={handleDragStart}
-        onDragUpdate={handleDragUpdate}
-        onDragEnd={handleDragEnd}
-      >
+      <DragDropContext onDragEnd={handleDragEnd}>
         <div className='grid grid-cols-2 gap-4 my-4'>
-          {Object.keys(allColumns).map((columnId) => (
+          {columns.map((column) => (
             <Column
-              tasks={allColumns[columnId].tasks}
-              column={allColumns[columnId]}
-              key={columnId}
+              key={column.id}
+              column={column}
+              tasks={tasks.filter((task) => task.status === column.title)}
             />
           ))}
         </div>
       </DragDropContext>
     </div>
   );
-}
+};
 
 export default App;

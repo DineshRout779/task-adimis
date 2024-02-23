@@ -3,18 +3,16 @@ import { Draggable } from '@hello-pangea/dnd';
 
 const Task = ({ task, index }: { task: Task; index: number }) => {
   return (
-    <Draggable draggableId={task.id.toString()} key={index} index={index}>
+    <Draggable key={task.id} draggableId={`${task.id}`} index={index}>
       {(provided) => (
-        <li
+        <div
+          ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
-          ref={provided.innerRef}
           className='p-4 rounded-md shadow-sm bg-white my-2'
-          key={task.id}
         >
-          <p> {task.title}</p>
-          <small>{task.description}</small>
-        </li>
+          {task.title}
+        </div>
       )}
     </Draggable>
   );

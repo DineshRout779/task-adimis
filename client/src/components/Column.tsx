@@ -1,29 +1,29 @@
 import { Droppable } from '@hello-pangea/dnd';
+import {
+  Column as ColumnType,
+  Task as TaskType,
+} from '../features/tasks/taskSlice';
 import Task from './Task';
-import { Task as TaskType } from '@/features/tasks/taskSlice';
 
-type ColumnProps = {
-  column: {
-    id: string;
-    tasks: TaskType[];
-    title: string;
-  };
+const Column = ({
+  column,
+  tasks,
+}: {
+  column: ColumnType;
   tasks: TaskType[];
-};
-
-const Column = ({ column, tasks }: ColumnProps) => {
+}) => {
   return (
-    <div key={column.id} className='p-4 bg-sky-100 rounded-lg shadow'>
-      <h1 className='text-xl  font-semibold'>{column.title}</h1>
+    <div className='p-4 bg-sky-100 rounded-lg shadow'>
+      <h1 className='text-xl font-semibold capitalize'>{column.title}</h1>
 
-      <Droppable droppableId={column.id}>
+      <Droppable droppableId={column.title}>
         {(provided) => (
-          <ul {...provided.droppableProps} ref={provided.innerRef}>
-            {tasks.map((task, i) => (
-              <Task task={task} index={i} key={task.id} />
+          <div ref={provided.innerRef} {...provided.droppableProps}>
+            {tasks.map((task, index) => (
+              <Task index={index} key={task.id} task={task} />
             ))}
             {provided.placeholder}
-          </ul>
+          </div>
         )}
       </Droppable>
     </div>
