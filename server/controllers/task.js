@@ -9,7 +9,7 @@ exports.getTasks = async (req, res) => {
     const tasks = await Task.findAll();
     return res.status(200).json({
       message: 'Tasks fetched successfully',
-      data: tasks,
+      tasks,
     });
   } catch (error) {
     console.error(error);
