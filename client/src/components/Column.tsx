@@ -1,25 +1,33 @@
 import { Droppable } from '@hello-pangea/dnd';
 import {
   Column as ColumnType,
-  Task as TaskType,
+  selectColumns,
 } from '../features/tasks/taskSlice';
 import Task from './Task';
+import { useSelector } from 'react-redux';
 
-const Column = ({
-  column,
-  tasks,
-}: {
-  column: ColumnType;
-  tasks: TaskType[];
-}) => {
+const Column = ({ title }: { title: string }) => {
+  const columns = useSelector(selectColumns);
+  const column = columns.find(
+    (column: ColumnType) => column.title === title.toLowerCase()
+  ) || { title, tasks: [] };
+
+  useEffect(() => {
+    console.log(first);
+  }, [third]);
+
   return (
     <div className='p-4 bg-sky-100 rounded-lg shadow'>
-      <h1 className='text-xl font-semibold capitalize'>{column.title}</h1>
+      <h1 className='text-xl font-semibold capitalize'>{title}</h1>
 
-      <Droppable droppableId={column.title}>
+      <Droppable droppableId={title}>
         {(provided) => (
-          <div ref={provided.innerRef} {...provided.droppableProps}>
-            {tasks.map((task, index) => (
+          <div
+            className='h-full'
+            ref={provided.innerRef}
+            {...provided.droppableProps}
+          >
+            {column?.tasks.map((task, index) => (
               <Task index={index} key={task.id} task={task} />
             ))}
             {provided.placeholder}

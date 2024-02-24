@@ -17,6 +17,9 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
+    index: {
+      type: DataTypes.INTEGER,
+    },
   });
 
   return Task;

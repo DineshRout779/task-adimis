@@ -1,5 +1,4 @@
 import { createSlice } from '@reduxjs/toolkit';
-// import type { PayloadAction } from '@reduxjs/toolkit';
 import type { RootState } from '../../app/store';
 
 export type Task = {
@@ -22,11 +21,13 @@ export type Column = {
 type InitialState = {
   tasks: Task[];
   columns: Column[];
+  viewAs: 'table' | 'kanban';
 };
 
 const initialState: InitialState = {
   tasks: [],
   columns: [],
+  viewAs: 'kanban',
 };
 
 export const taskSlice = createSlice({
@@ -34,7 +35,6 @@ export const taskSlice = createSlice({
   initialState,
   reducers: {
     setTasks: (state, action) => {
-      // console.log(action.payload);
       state.tasks = action.payload.tasks;
     },
     setColumns: (state, action) => {
@@ -43,18 +43,31 @@ export const taskSlice = createSlice({
     updateTask: (state, action) => {
       console.log(action.payload);
 
-      state.tasks = state.tasks.map((task: Task) =>
-        task.id == action.payload.id
-          ? { ...task, status: action.payload.status }
-          : task
-      );
+      state.tasks = state.tasks.map((task: Task) => {
+        console.log('values', Number(task.id) == action.payload.id);
+
+        if (Number(task.id) == action.payload.id) {
+          console.log('happening');
+          return {
+            ...task,
+            status: action.payload.status,
+          };
+        }
+        console.log('no');
+        return task;
+      });
+    },
+    switchView: (state) => {
+      state.viewAs = state.viewAs === 'table' ? 'kanban' : 'table';
     },
   },
 });
 
-export const { setTasks, setColumns, updateTask } = taskSlice.actions;
+export const { setTasks, setColumns, updateTask, switchView } =
+  taskSlice.actions;
 
 export const selectTasks = (state: RootState) => state.tasks.tasks;
 export const selectColumns = (state: RootState) => state.tasks.columns;
+export const selectView = (state: RootState) => state.tasks.viewAs;
 
 export default taskSlice.reducer;
