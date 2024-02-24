@@ -1,9 +1,6 @@
 import { useSelector } from 'react-redux';
 import { useGetTasksQuery } from './services/task';
 import {
-  Column as ColumnType,
-  Task,
-  selectColumns,
   selectTasks,
   selectView,
   setColumns,
@@ -13,7 +10,7 @@ import {
 } from './features/tasks/taskSlice';
 import { useDispatch } from 'react-redux';
 import { useEffect, useState } from 'react';
-import { DragDropContext } from '@hello-pangea/dnd';
+import { DragDropContext, DropResult } from '@hello-pangea/dnd';
 import Column from './components/Column';
 import {
   Table,
@@ -23,61 +20,25 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-
-const getStatusClasses = (status: string) => {
-  switch (status) {
-    case 'todo':
-      return 'bg-red-50 text-zinc-600';
-    case 'pending':
-      return 'bg-yellow-200 text-zinc-600';
-    case 'completed':
-      return 'bg-green-200 text-zinc-600';
-    default:
-      return 'bg-gray-200 text-zinc-600';
-  }
-};
+import { getStatusClasses } from './utils/getClassNames';
 
 const App = () => {
   const { data, isLoading, error, isSuccess } = useGetTasksQuery();
   const tasks = useSelector(selectTasks);
   const viewAs = useSelector(selectView);
-  const columns = useSelector(selectColumns);
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
-
-  console.log(
-    tasks.map((task) => task.status),
-    columns
-  );
 
   useEffect(() => {
     if (isSuccess) {
       dispatch(setTasks(data));
 
-      const columns = data.tasks.reduce((acc: ColumnType[], task: Task) => {
-        const { status } = task;
-
-        const column = acc.find((c: ColumnType) => c.title === status);
-
-        if (!column) {
-          acc.push({
-            id: `column-${acc.length}`,
-            title: status,
-            tasks: [task],
-          });
-        }
-
-        column?.tasks.push(task);
-        return acc;
-      }, []);
-
-      // console.log('cols: ', columns);
-      dispatch(setColumns(columns));
+      dispatch(setColumns());
       setLoading(false);
     }
   }, [data, dispatch, isSuccess]);
 
-  const handleDragEnd = (result) => {
+  const handleDragEnd = (result: DropResult) => {
     const { source, destination, draggableId } = result;
 
     console.log(result);
@@ -102,6 +63,8 @@ const App = () => {
         index: destination.index,
       })
     );
+
+    dispatch(setColumns());
   };
 
   if (isLoading || loading) return <p>Loading...</p>;

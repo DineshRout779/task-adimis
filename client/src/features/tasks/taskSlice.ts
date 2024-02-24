@@ -37,23 +37,34 @@ export const taskSlice = createSlice({
     setTasks: (state, action) => {
       state.tasks = action.payload.tasks;
     },
-    setColumns: (state, action) => {
-      state.columns = action.payload;
+    setColumns: (state) => {
+      state.columns = state.tasks.reduce((acc: Column[], task: Task) => {
+        const { status } = task;
+
+        const column = acc.find((c: Column) => c.title === status);
+
+        if (!column) {
+          acc.push({
+            id: `column-${acc.length}`,
+            title: status,
+            tasks: [task],
+          });
+        }
+
+        column?.tasks.push(task);
+        return acc;
+      }, []);
     },
     updateTask: (state, action) => {
-      console.log(action.payload);
+      // console.log(action.payload);
 
       state.tasks = state.tasks.map((task: Task) => {
-        console.log('values', Number(task.id) == action.payload.id);
-
-        if (Number(task.id) == action.payload.id) {
-          console.log('happening');
+        if (task.id === Number(action.payload.id)) {
           return {
             ...task,
             status: action.payload.status,
           };
         }
-        console.log('no');
         return task;
       });
     },

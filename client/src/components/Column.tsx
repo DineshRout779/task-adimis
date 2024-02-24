@@ -12,10 +12,6 @@ const Column = ({ title }: { title: string }) => {
     (column: ColumnType) => column.title === title.toLowerCase()
   ) || { title, tasks: [] };
 
-  useEffect(() => {
-    console.log(first);
-  }, [third]);
-
   return (
     <div className='p-4 bg-sky-100 rounded-lg shadow'>
       <h1 className='text-xl font-semibold capitalize'>{title}</h1>
